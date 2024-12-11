@@ -5,6 +5,7 @@ import collections
 import tracemalloc
 from sys import intern
 from abc import ABC, abstractmethod
+from typing import List, Dict
 
 
 class CSVParser(ABC):
@@ -87,34 +88,64 @@ def read_rides_as_columns(filename, types=[str, str, str, int]):
             records.append({ name:func(val) for name, func, val in zip(headers, types, row) })
     return records
 
-def read_csv_as_dicts(filename, coltypes):
-    '''
-    # Deprecated after ex3_7 (keep for documentation purposes)
-    with open(filename) as f:
-        rows = csv.reader(f)
-        headers = next(rows)
-        record = []
-        for row in rows:
-            record.append({ name:func(val) for name, func, val in zip(headers, coltypes, row) })
-    '''
-    parser = DictCSVParser(coltypes)
-    record = parser.parse(filename)
-    return record
+# Depricated ex5.1 - keep for documentation purposes
+'''
+    def read_csv_as_dicts(filename, coltypes):
+        parser = DictCSVParser(coltypes)
+        record = parser.parse(filename)
+        return record
 
-def read_csv_as_instances(filename, cls):
-    '''
-    Read a CSV file into a list of instances
+    def read_csv_as_instances(filename, cls):
+        \'''
+        Read a CSV file into a list of instances
+        \'''
+        parser = InstanceCSVParser(cls)
+        records = parser.parse(filename)
+        return records
+'''
 
-    # Deprecated after ex3_7 (keep for documentation purposes)
+# TODO add type hints
+def read_csv_as_dicts(filename: str, headers=None) -> List[Dict]:
+    '''
+    Read CSV data into a list of dictionaries with optional type conversion
+    ''' 
+    with open(filename) as file:
+        records = csv_as_dicts(file, headers=headers)
+    return records
+
+def csv_as_dicts(file, types: List, headers=None) -> List:
+    '''
+    Read CSV data into a list of dictionaries with optional type conversion
+    '''
+    rows = csv.reader(file)
     records = []
-    with open(filename) as f:
-        rows = csv.reader(f)
-        headers = next(rows)
-        for row in rows:
-            records.append(cls.from_row(row))
+    if headers is None:
+        print(f'No headers provided. Extract headers from first row.')
+        headers = next(rows)    
+    for row in rows:
+        record = { name: func(val) 
+                    for name, func, val in zip(headers, types, row) }
+        records.append(record)
+    return records
+
+def read_csv_as_instances(filename: str) -> List:
     '''
-    parser = InstanceCSVParser(cls)
-    records = parser.parse(filename)
+    Read CSV data into a list of instances
+    '''
+    with open(filename) as file:
+        records = csv_as_instances(file)
+    return records
+
+def csv_as_instances(file, cls):
+    '''
+    Read CSV data into a list of instances
+    '''
+    rows = csv.reader(file)
+    records = []
+    headers = next(rows)
+    for row in rows:
+        record = cls.from_row(row)
+        records.append(record)
     return records
 
 def check_mem_usage():
