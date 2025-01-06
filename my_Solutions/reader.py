@@ -5,7 +5,7 @@ import collections
 import tracemalloc
 from sys import intern
 from abc import ABC, abstractmethod
-from typing import List, Dict
+from typing import List, Dict, IO
 
 
 class CSVParser(ABC):
@@ -113,7 +113,7 @@ def read_csv_as_dicts(filename: str, headers=None) -> List[Dict]:
         records = csv_as_dicts(file, headers=headers)
     return records
 
-def csv_as_dicts(file, types: List, headers=None) -> List:
+def csv_as_dicts(file, types: List, headers=None) -> List[Dict]:
     '''
     Read CSV data into a list of dictionaries with optional type conversion
     '''
@@ -136,7 +136,7 @@ def read_csv_as_instances(filename: str) -> List:
         records = csv_as_instances(file)
     return records
 
-def csv_as_instances(file, cls):
+def csv_as_instances(file: IO, cls) -> List:
     '''
     Read CSV data into a list of instances
     '''
@@ -151,11 +151,11 @@ def csv_as_instances(file, cls):
 def check_mem_usage():
     # check memory for str
     tracemalloc.start()
-    data = read_rides_as_columns('..\Data\ctabus.csv', [str, str, str, int])
+    data = read_rides_as_columns('..\\Data\\ctabus.csv', [str, str, str, int])
     print(f'Mem usage for str: {tracemalloc.get_traced_memory()}') 
 
     # check memory for intern
-    data = read_rides_as_columns('..\Data\ctabus.csv', [intern, intern, str, int])
+    data = read_rides_as_columns('..\\Data\\ctabus.csv', [intern, intern, str, int])
     print(f'Mem usage for intern: {tracemalloc.get_traced_memory()}')
 
 if __name__ == '__main__':
